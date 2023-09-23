@@ -1,5 +1,27 @@
 // use this to decode a token and get the user's information out of it
+import { AuthenticationError } from 'apollo-server-express';
+import AuthService from './path-to-auth-service';
 import decode from 'jwt-decode';
+
+const authMiddleware = (context) => {
+  const token = context.req.headers.authorization || '';
+
+  if (!token) {
+    throw new AuthenticationError('Authentication token missing');
+  }
+
+  try {
+    // Verify and decode the token using your authentication service
+    const user = AuthService.verifyToken(token);
+
+    // Attach the decoded user data to the context to be used in resolvers
+    context.user = user;
+
+    return context;
+  } catch (error) {
+    throw new AuthenticationError('Invalid or expired token');
+  }
+};
 
 // create a new class to instantiate for a user
 class AuthService {
